@@ -387,7 +387,8 @@
 </footer>
 
 <script>
-    const GOOGLE_SHEET_ID = "1fpd9X0CYOArq59vhqjaruBTVrb2ZPxMeNoDz5briLwA"; 
+    // تم التعديل إلى اسم الملف المطلوب بدقة
+    const JSON_FILE_URL = "data.json"; 
 
     const BUILTIN_LESSONS = []; 
     const BUILTIN_GRADES = [];
@@ -414,13 +415,10 @@
     }
 
     async function fetchCloudData() {
-        if(!GOOGLE_SHEET_ID || GOOGLE_SHEET_ID.includes("ضع_هنا")) return;
-        const csvUrl = `https://docs.google.com/spreadsheets/d/${GOOGLE_SHEET_ID}/export?format=csv&gid=0`;
         try {
-            const response = await fetch(csvUrl);
+            const response = await fetch(JSON_FILE_URL);
             if(response.ok) {
-                const csvText = await response.text();
-                const parsedLessons = parseCSV(csvText);
+                const parsedLessons = await response.json();
                 if(parsedLessons.length > 0) {
                     lessons = parsedLessons;
                     localStorage.setItem('math_lessons', JSON.stringify(lessons));
@@ -428,41 +426,9 @@
                 }
             }
         } catch(e) {
-            console.log("تنبيه: يتم العرض محلياً حالياً.");
+            console.error("خطأ أثناء استدعاء ملف الـ JSON:", e);
+            console.log("تنبيه: يتم العرض محلياً حالياً من الذاكرة الاحتياطية للمتصفح.");
         }
-    }
-
-    function parseCSV(text) {
-        const lines = text.split('\n');
-        const result = [];
-        for(let i = 1; i < lines.length; i++) {
-            let line = lines[i].trim();
-            if(!line) continue;
-            let row = [];
-            let insideQuote = false;
-            let entry = '';
-            for(let j = 0; j < line.length; j++) {
-                let char = line[j];
-                if(char === '"') { insideQuote = !insideQuote; }
-                else if(char === ',' && !insideQuote) { row.push(entry); entry = ''; }
-                else { entry += char; }
-            }
-            row.push(entry);
-
-            if (row[2] && row[2].trim() !== "") {
-                result.push({
-                    grade: row[0] ? row[0].trim() : "6",
-                    branch: row[1] ? row[1].trim() : "جبر",
-                    title: row[2] ? row[2].trim() : "",
-                    img: row[3] ? row[3].trim() : "",
-                    url_expl: row[4] ? row[4].trim() : "",
-                    url_work: row[5] ? row[5].trim() : "",
-                    url_sol: row[6] ? row[6].trim() : "",
-                    url_exam: row[7] ? row[7].trim() : ""
-                });
-            }
-        }
-        return result;
     }
 
     function renderGradeCards() {
