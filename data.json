@@ -272,6 +272,7 @@
   },
   {
     "grade": "1_prep",
+    "branch": "جبر",
     "title": "الدرس 1: التناسب",
     "img": "",
     "url_expl": "https://youtu.be/qoC9quP48QY?si=vGgmHulgU8AT4uLw",
@@ -982,6 +983,16 @@
     "url_work": ""
   },
   {
+    "grade": "1_prep",
+    "branch": "جبر",
+    "title": "مقياس الرسم",
+    "img": "",
+    "url_expl": "https://youtu.be/hWBtnAFnFhY?si=PYOqzvkNPBp4965P",
+    "url_work": "",
+    "url_sol": "",
+    "url_exam": ""
+  },
+  {
     "img": "",
     "grade": "3_prep",
     "title": "الدرس 20: اكتب عنوان الدرس هنا",
@@ -1088,5 +1099,25 @@
     "url_work": "",
     "url_sol": "",
     "url_exam": "https://app.netlify.com/projects/earnest-pavlova-fe64d4/overview#:~:text=earnest%2Dpavlova%2Dfe64d4.netlify.app"
+  },
+  {
+    "grade": "1_prep",
+    "branch": "جبر",
+    "title": "التقسيم التناسبي",
+    "img": "",
+    "url_expl": "https://youtu.be/VvJpRTnlA3w?si=Zl4cNFlUmi6oTRyP",
+    "url_work": "",
+    "url_sol": "",
+    "url_exam": ""
+  },
+  {
+    "grade": "1_prep",
+    "branch": "جبر",
+    "title": "النسبة المئوية",
+    "img": "",
+    "url_expl": "https://youtu.be/D55__S4UQrs?si=vkfKE3KrBhLNQk_R",
+    "url_work": "",
+    "url_sol": "",
+    "url_exam": ""
   }
 ]
