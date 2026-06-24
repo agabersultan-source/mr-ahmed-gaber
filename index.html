@@ -134,6 +134,40 @@
         body.dark-mode .back-btn:hover { background: #f8fafc; color: #0f172a; }
         .current-grade-title { font-size: 1.5rem; font-weight: 800; color: var(--text-dark); }
 
+        /* تجميل وتثبيت الزر العائم الجديد الذكي */
+        .floating-back-btn {
+            position: fixed;
+            bottom: 35px;
+            left: 35px;
+            z-index: 999;
+            background: #1c2541;
+            color: #ffffff;
+            border: 2px solid #f59e0b;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: none; /* يتم التحكم بالظهور عبر الجافاسكريبت */
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 10px 25px rgba(245, 158, 11, 0.35);
+            transform: translateY(0);
+        }
+        body.dark-mode .floating-back-btn {
+            background: #f8fafc;
+            color: #0f172a;
+        }
+        .floating-back-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(245, 158, 11, 0.55);
+            background: #0b132b;
+        }
+        body.dark-mode .floating-back-btn:hover {
+            background: #ffffff;
+            color: #1c2541;
+        }
+
         .controls-container {
             background: white;
             padding: 20px;
@@ -311,6 +345,27 @@
         .bg-facebook { background: #1877f2; }
         .bg-youtube { background: #ff0000; }
         .bg-tiktok { background: #000000; border: 1px solid #333; }
+
+        /* استعلام الشاشات للموبايل: لتحويل الزر إلى دائرة سحرية صغيرة وسهلة للضغط */
+        @media (max-width: 768px) {
+            .floating-back-btn {
+                bottom: 20px;
+                left: 20px;
+                width: 56px;
+                height: 56px;
+                padding: 0;
+                justify-content: center;
+                border-radius: 50%;
+            }
+            .floating-back-btn span {
+                display: none; /* إخفاء النص البرمجي على الموبايل لتوفير المساحة */
+            }
+            .floating-back-btn svg {
+                width: 20px;
+                height: 20px;
+                margin: 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -329,6 +384,12 @@
         <p>المؤسس في الرياضيات</p>
     </div>
 </header>
+
+<!-- زر العودة العائم الجديد (يتحرك مع تمرير الصفحة) -->
+<button id="floating-back-btn" class="floating-back-btn" onclick="showGradesHome()" title="العودة للمراحل الدراسية">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:16px; height:16px; transform: scaleX(-1);"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+    <span>العودة للمراحل الدراسية</span>
+</button>
 
 <div class="container">
     <div class="motivation-container">
@@ -387,7 +448,6 @@
 </footer>
 
 <script>
-    // تم التعديل إلى اسم الملف المطلوب بدقة
     const JSON_FILE_URL = "data.json"; 
 
     const BUILTIN_LESSONS = []; 
@@ -427,7 +487,6 @@
             }
         } catch(e) {
             console.error("خطأ أثناء استدعاء ملف الـ JSON:", e);
-            console.log("تنبيه: يتم العرض محلياً حالياً من الذاكرة الاحتياطية للمتصفح.");
         }
     }
 
@@ -452,6 +511,10 @@
         document.getElementById('current-grade-title').innerText = gradeTitle;
         document.getElementById('grades-view').style.display = 'none';
         document.getElementById('lessons-view').style.display = 'block';
+        
+        // إظهار الزر العائم عند الانتقال لصفحة الدروس
+        document.getElementById('floating-back-btn').style.display = 'flex'; 
+        
         renderLessons();
     }
 
@@ -459,6 +522,12 @@
         selectedGradeId = null;
         document.getElementById('lessons-view').style.display = 'none';
         document.getElementById('grades-view').style.display = 'grid';
+        
+        // إخفاء الزر العائم عند العودة للرئيسية
+        document.getElementById('floating-back-btn').style.display = 'none'; 
+        
+        // صعود الشاشة لأعلى الصفحة تلقائياً لراحة الطالب عند التغيير
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function filterByBranch(branch) {
