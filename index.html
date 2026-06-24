@@ -485,12 +485,15 @@
         const grid = document.getElementById('lessons-grid'); grid.innerHTML = "";
         if (!selectedGradeId) return;
         const searchQuery = document.getElementById('search-input').value.trim().toLowerCase();
+        
+        // 1. جلب وحساب النسبة بناء على كل دروس الصف
         const allGradeLessons = lessons.filter(l => l.grade === selectedGradeId);
         const completedGradeLessons = allGradeLessons.filter(l => completedLessons.includes(`${selectedGradeId}_${l.title}`));
         const progressPercent = allGradeLessons.length ? Math.round((completedGradeLessons.length / allGradeLessons.length) * 100) : 0;
         document.getElementById('progress-percent-text').innerText = progressPercent + "%";
         document.getElementById('progress-bar-fill').style.width = progressPercent + "%";
 
+        // 2. تصفية الدروس للبحث والتبويبات
         const filteredLessons = allGradeLessons.filter(l => {
             const matchesBranch = (currentBranchFilter === 'all' || (l.branch || 'جبر') === currentBranchFilter);
             const matchesSearch = (!searchQuery || l.title.toLowerCase().includes(searchQuery));
@@ -502,29 +505,68 @@
             return;
         }
 
+        // 3. بناء الكروت مع منطق القفل المتسلسل المتين
         filteredLessons.forEach((l) => {
             const ytId = getYoutubeId(l.url_expl);
             const finalImgSrc = l.img ? l.img : (ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=600&q=80');
-            const lessonKey = `${selectedGradeId}_${l.title}`; const isCompleted = completedLessons.includes(lessonKey);
-            let branchClass = 'bg-branch-jabr'; if(l.branch === 'هندسة') branchClass = 'bg-branch-handasa'; if(l.branch === 'إحصاء') branchClass = 'bg-branch-ehsa';
+            const lessonKey = `${selectedGradeId}_${l.title}`; 
+            const isCompleted = completedLessons.includes(lessonKey);
+            let branchClass = 'bg-branch-jabr'; 
+            if(l.branch === 'هندسة') branchClass = 'bg-branch-handasa'; 
+            if(l.branch === 'إحصاء') branchClass = 'bg-branch-ehsa';
             const safeLessonKey = lessonKey.replace(/'/g, "\\'");
 
+            // 🔒 التحقق من حالة القفل: نعتمد دائماً على ترتيب الدرس الأصلي داخل الصف الدراسي بالكامل
+            const overallIndex = allGradeLessons.findIndex(item => item.title === l.title);
+            let isLocked = false;
+            
+            if (overallIndex > 0) {
+                const prevLesson = allGradeLessons[overallIndex - 1];
+                const prevLessonKey = `${selectedGradeId}_${prevLesson.title}`;
+                if (!completedLessons.includes(prevLessonKey)) {
+                    isLocked = true;
+                }
+            }
+
+            // رسالة التنبيه الموحدة والاحترافية للطلاب عند محاولة فتح درس مقفل
+            const lockAlertMsg = "🔒 عذراً يا بطل! هذا الدرس مغلق حالياً.\\n\\nيجب عليك أولاً مذاكرة الدرس السابق وحل امتحانه ثم الضغط على زر (📖 تحديد كمنجز) لتفتح لك بقية الدروس المتتالية وتستكمل طريقك نحو القمة! 🚀";
+
             grid.innerHTML += `
-                <div class="card">
-                    <div class="card-img-wrapper"><img class="card-img" src="${finalImgSrc}"></div>
+                <div class="card" style="${isLocked ? 'opacity: 0.7; pointer-events: auto;' : ''}">
+                    <div class="card-img-wrapper" style="${isLocked ? 'filter: grayscale(100%);' : ''}">
+                        <img class="card-img" src="${finalImgSrc}">
+                    </div>
                     <div class="card-content">
                         <div class="student-status-bar">
                             <span class="branch-badge ${branchClass}">${l.branch || 'جبر'}</span>
-                            <button class="done-toggle-btn ${isCompleted ? 'completed' : ''}" onclick="toggleLessonProgress('${safeLessonKey}')">
-                                ${isCompleted ? '✅ تم الإنجاز' : '📖 تحديد كمنجز'}
-                            </button>
+                            ${isLocked ? 
+                                `<span class="done-toggle-btn" style="background: #f1f5f9; border-color: #cbd5e1; color: #94a3b8; cursor: not-allowed;">🔒 مغلق</span>` : 
+                                `<button class="done-toggle-btn ${isCompleted ? 'completed' : ''}" onclick="toggleLessonProgress('${safeLessonKey}')">
+                                    ${isCompleted ? '✅ تم الإنجاز' : '📖 تحديد كمنجز'}
+                                </button>`
+                            }
                         </div>
-                        <h3 class="card-title">${l.title}</h3>
+                        <h3 class="card-title">${l.title} ${isLocked ? '🔒' : ''}</h3>
                         <div class="links-grid">
-                            ${l.url_expl ? `<a href="${l.url_expl}" target="_blank" class="link-btn btn-expl">${icons.expl} فيديو الشرح</a>` : ''}
-                            ${l.url_work ? `<a href="${l.url_work}" target="_blank" class="link-btn btn-work">${icons.work} تحميل الواجب</a>` : ''}
-                            ${l.url_sol ? `<a href="${l.url_sol}" target="_blank" class="link-btn btn-sol">${icons.sol} فيديو الحل</a>` : ''}
-                            ${l.url_exam ? `<a href="${l.url_exam}" target="_blank" class="link-btn btn-exam">${icons.exam} الامتحان</a>` : ''}
+                            ${l.url_expl ? (isLocked ? 
+                                `<button class="link-btn btn-expl" style="background: #64748b; cursor: not-allowed;" onclick="alert('${lockAlertMsg}')">${icons.expl} فيديو الشرح</button>` : 
+                                `<a href="${l.url_expl}" target="_blank" class="link-btn btn-expl">${icons.expl} فيديو الشرح</a>`
+                            ) : ''}
+                            
+                            ${l.url_work ? (isLocked ? 
+                                `<button class="link-btn btn-work" style="background: #64748b; cursor: not-allowed;" onclick="alert('${lockAlertMsg}')">${icons.work} تحميل الواجب</button>` : 
+                                `<a href="${l.url_work}" target="_blank" class="link-btn btn-work">${icons.work} تحميل الواجب</a>`
+                            ) : ''}
+                            
+                            ${l.url_sol ? (isLocked ? 
+                                `<button class="link-btn btn-sol" style="background: #64748b; cursor: not-allowed;" onclick="alert('${lockAlertMsg}')">${icons.sol} فيديو الحل</button>` : 
+                                `<a href="${l.url_sol}" target="_blank" class="link-btn btn-sol">${icons.sol} فيديو الحل</a>`
+                            ) : ''}
+                            
+                            ${l.url_exam ? (isLocked ? 
+                                `<button class="link-btn btn-exam" style="background: #64748b; cursor: not-allowed;" onclick="alert('${lockAlertMsg}')">${icons.exam} الامتحان</button>` : 
+                                `<a href="${l.url_exam}" target="_blank" class="link-btn btn-exam">${icons.exam} الامتحان</a>`
+                            ) : ''}
                         </div>
                     </div>
                 </div>`;
